@@ -17,6 +17,7 @@ def download_lang(lang):
 
     return path # Path to directory with po_files
 
+
 def parse_po_file(path):
     """ Create dictionary with translated files as key containing
     the file content as a list.
@@ -33,9 +34,10 @@ def parse_po_file(path):
 
     for entity in po:
         for out_file, _ in entity.occurrences:
-            content = out_files.get(out_file, [])
+            f = out_file.split('/')[-1] # Get only the filename
+            content = out_files.get(f, [])
             content.append(entity.msgstr)
-            out_files[out_file] = content
+            out_files[f] = content
 
     return out_files
 
