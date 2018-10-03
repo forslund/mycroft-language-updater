@@ -7,8 +7,11 @@ from os.path import join
 import os
 import shutil
 
-CREDS = os.env[GITHUB_ACCESS_KEY]
-g = Github(CREDS)
+CREDS = os.environ.get('GITHUB_ACCESS_KEY')
+if CREDS:
+    g = Github(CREDS)
+else:
+    g = None
 
 class TempGit(Git):
     def __init__(self, url, name):
