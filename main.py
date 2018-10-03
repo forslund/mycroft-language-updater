@@ -37,6 +37,15 @@ def get_skill_repos(branch=None):
     return d
 
 
+def skill_from_po(po_file):
+    """ removes -<Lang-code>.po and returns skill name
+
+    Ex. cocktails-sv.po -> cocktails,
+        skill-alarm-de.po -> skill-alarm
+    """
+    return '-'.join(po_file.split('-')[:-1])
+
+
 def download_lang(lang):
     # TODO
     # build url for language code
@@ -89,8 +98,7 @@ def main():
         # for all po files
         # use glob to get all po-files in the directory
         for f in glob(join(po_dir, '*')):
-            # TODO: get skill url for filename
-
+            skill_repo = skill_repos[skill_from_po(f)]
 
             print('Processing {}'.format(f))
             translation = parse_po_file(f)
