@@ -107,5 +107,8 @@ for lang in languages:
                 {k: translation[k] for k in translation if
                     translation[k].endswith('.rx'})
         # Commit
+        work.commit('-m', 'Update translations')
         # Push branch to fork
+        work.push('work', branch)
         # Open PR
+        create_or_edit_pr(branch, upstream, lang)

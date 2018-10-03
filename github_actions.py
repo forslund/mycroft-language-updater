@@ -42,7 +42,7 @@ def create_work_dir(upstream, fork):
     return tmp_repo
 
 
-def create_or_edit_pr(local_repo, branch, fork, upstream, lang):
+def create_or_edit_pr(branch, upstream, lang):
     user = g.get_user()
 
     base = upstream.default_branch
