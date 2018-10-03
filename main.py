@@ -2,9 +2,39 @@ import sys
 from os.path import join
 from glob import glob
 from datetime import date
+from requests import get
 
 import polib
 from github_actions import get_work_repos, create_work_dir, create_or_edit_pr
+
+DEFAULT_BRANCH = '18.08'
+SKILLS_URL = ('https://raw.githubusercontent.com/MycroftAI/mycroft-skills/'
+              '{}/.gitmodules')
+
+def get_skill_repos(branch=None):
+    """ Fetches the skill list from the mycroft-skills repo and returns
+        a dict mapping paths to urls
+
+        Arguments:
+            branch: branch of the repo to use
+
+        Returns: dict with path-url pairs
+    """
+    branch = branch or DEFAULT_BRANCH
+    response = get(SKILLS_URL.format(branch))
+    skills = response.text.split('\n')
+
+    d = {}
+    key = None
+    for l in skills:
+        if 'path = ' in l:
+            key = l.split(' = ')[1].strip()
+        elif key and 'url = ' in l:
+            d[key] = l.split(' = ')[1].strip()
+            key = None
+        else:
+            key = None
+    return d
 
 
 def download_lang(lang):
@@ -52,6 +82,7 @@ def insert_translation(path, translation):
 
 
 def main():
+    skill_repos = get_skill_repos()
     for lang in languages:
         po_dir = get_language(lang)
 

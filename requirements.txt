@@ -1,3 +1,4 @@
 polib
 pygithub
 GitPython
+requests
