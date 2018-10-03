@@ -73,39 +73,39 @@ for lang in languages:
         if 'locale' in os.listdir('tmp_repo_path'):
             path = join('locale', lang)
             work.rm(join(path, '*'))  # Remove all files
-            insert_translations(path, translations)  # insert new translations
+            # insert new translations
+            insert_translations(join(work.tmp_path, path), translations)
             work.add(join(path, '*'))  # add the new files
         else:
             # handle dialog directory
             path = join('dialog', lang)
             work.rm(join(path, '*'))  # Remove all files
-            insert_translation(work, path,
+            insert_translation(work, join(work.tmp_path, path),
                 {k: translation[k] for k in translation if
                     translation[k].endswith('.dialog'})
-            insert_translation(work, path,
+            insert_translation(join(work.tmp_path, path),
                 {k: translation[k] for k in translation if
                     translation[k].endswith('.list'})
             work.add(join(path, '*'))  # add the new files
             # handle vocab directory
             path = join('vocab', lang)
             work.rm(join(path, '*'))  # Remove all files
-            insert_translation(work, path,
+            insert_translation(join(work.tmp_path, path),
                 {k: translation[k] for k in translation if
                     translation[k].endswith('.intent'})
-            insert_translation(work, path,
+            insert_translation(work, join(work.tmp_path, path),
                 {k: translation[k] for k in translation if
                     translation[k].endswith('.voc'})
-            insert_translation(work, path,
+            insert_translation(join(work.tmp_path, path),
                 {k: translation[k] for k in translation if
                     translation[k].endswith('.entity'})
             work.add(join(path, '*'))  # add the new files
             # Handle regex dir
             path = join('regex', lang)
             work.rm(join(path, '*'))  # Remove all files
-            insert_translation(work, path,
+            insert_translation(join(work.tmp_path, path),
                 {k: translation[k] for k in translation if
                     translation[k].endswith('.rx'})
-
         # Commit
         # Push branch to fork
         # Open PR
