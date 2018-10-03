@@ -1,6 +1,7 @@
 import sys
 from os.path import join
 from glob import glob
+from datetime import date
 
 import polib
 from github_actions import get_work_repos, get_work_dir, create_pr
@@ -66,7 +67,8 @@ for lang in languages:
 
         # Modify repo
         # Checkout new branch
-        work.checkout('-b', 'translation')
+        branch = 'translate-' + str(date.today())
+        work.checkout('-b', branch)
 
         if 'locale' in os.listdir('tmp_repo_path'):
             path = join('locale', lang)
