@@ -38,7 +38,7 @@ def create_work_dir(upstream, fork):
    # Clone from upstream
     tmp_repo = TempGit(upstream.clone_url, upstream.name)
     # Add fork
-    tmp_repo.remote('add', 'work', fork.clone_url)
+    tmp_repo.remote('add', 'work', fork.ssh_url)
     return tmp_repo
 
 
