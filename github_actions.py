@@ -3,7 +3,7 @@ from github import Github
 from git import Git, GitCommandError
 
 from subprocess import call
-from os.path import join
+from os.path import join, splitext
 import os
 import shutil
 
@@ -25,7 +25,7 @@ class TempGit(Git):
 
 def get_work_repos(upstream_url):
     # Github fork repo
-    upstream_id = upstream_url.split('github.com/')[1]
+    upstream_id, _= splitext(upstream_url.split('github.com/')[1])
     print(upstream_id)
     upstream = g.get_repo(upstream_id)
     print(upstream)
