@@ -83,12 +83,9 @@ def parse_po_file(path):
 
 
 def insert_translation(path, translation):
-    # TODO
-    # for each key in translation create a file in path by
-    # opening it ('w+') and then writing each item in translation[key]
-    pass
-
-
+    for filename in translation:
+        with open(join(path, filename), 'w+') as f:
+            f.writelines([l + '\n' for l in translation[filename]])
 
 
 def main():
