@@ -58,6 +58,29 @@ def download_lang(lang):
     return path # Path to directory with po_files
 
 
+def is_translated(path):
+    """ Checks if all files in the translation has at least one translation.
+
+    Arguments:
+        path (str): path to po-file
+
+    Returns: True if all files in translation has at least one translation,
+             otherwise False.
+    """
+    po = polib.pofile(path)
+    files = []
+    for e in po:
+        files += [f[0] for f in e.occurrences]
+    all_files = sorted(set(files))
+    translated_entities = [e for e in po if e.translated()]
+    files = []
+    for e in translated_entities:
+        files += [f[0] for f in e.occurrences]
+    translated_files = sorted(set(files))
+
+    return translated_files == all_files
+
+
 def parse_po_file(path):
     """ Create dictionary with translated files as key containing
     the file content as a list.
@@ -94,12 +117,13 @@ def main():
         po_dir = get_language(lang)
 
         # for all po files
-        # use glob to get all po-files in the directory
-        for f in glob(join(po_dir, '*')):
-            skill_url = skill_repos[skill_from_po(f)]
-
+        # use glob to get all po-files in the directory that is translated
+        for f in [po for  po in glob(join(po_dir, '*')) if is_translated(po)]:
             print('Processing {}'.format(f))
+
             translation = parse_po_file(f)
+            # Get git repo and github connections
+            skill_url = skill_repos[skill_from_po(f)]
             fork, upstream = get_work_repos(skill_url)
             work = create_work_dir(upstream, fork)
 
