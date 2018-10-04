@@ -1,5 +1,5 @@
 import sys
-from os.path import join
+from os.path import join, basename
 from glob import glob
 from datetime import date
 from requests import get
@@ -43,7 +43,7 @@ def skill_from_po(po_file):
     Ex. cocktails-sv.po -> cocktails,
         skill-alarm-de.po -> skill-alarm
     """
-    return '-'.join(po_file.split('-')[:-1])
+    return '-'.join(basename(po_file).split('-')[:-1])
 
 
 def download_lang(lang):
