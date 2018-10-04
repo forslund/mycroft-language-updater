@@ -1,5 +1,6 @@
 import sys
-from os.path import join, basename
+import os
+from os.path import join, basename, exists
 from glob import glob
 from datetime import date
 from requests import get
@@ -98,57 +99,70 @@ def main():
         # for all po files
         # use glob to get all po-files in the directory
         for f in glob(join(po_dir, '*')):
-            skill_repo = skill_repos[skill_from_po(f)]
+            skill_url = skill_repos[skill_from_po(f)]
 
             print('Processing {}'.format(f))
             translation = parse_po_file(f)
             fork, upstream = get_work_repos(skill_url)
-            work = get_work_dir(upstream, fork)
+            work = create_work_dir(upstream, fork)
 
             # Modify repo
             # Checkout new branch
             branch = 'translate-' + str(date.today())
             work.checkout('-b', branch)
 
-            if 'locale' in os.listdir('tmp_repo_path'):
+            if 'locale' in os.listdir(work.tmp_path):
                 path = join('locale', lang)
-                work.rm(join(path, '*'))  # Remove all files
+                if not exists(join(work.tmp_path,path)):
+                    os.mkdir(join(work.tmp_path, path))
+                else:
+                    work.rm(join(path, '*'))  # Remove all files
                 # insert new translations
                 insert_translations(join(work.tmp_path, path), translations)
                 work.add(join(path, '*'))  # add the new files
             else:
                 # handle dialog directory
                 path = join('dialog', lang)
-                work.rm(join(path, '*'))  # Remove all files
-                insert_translation(work, join(work.tmp_path, path),
-                    {k: translation[k] for k in translation if
-                        translation[k].endswith('.dialog')})
+                if not exists(join(work.tmp_path,path)):
+                    os.mkdir(join(work.tmp_path, path))
+                else:
+                    work.rm(join(path, '*'))  # Remove all files
                 insert_translation(join(work.tmp_path, path),
                     {k: translation[k] for k in translation if
-                        translation[k].endswith('.list')})
+                        k.endswith('.dialog')})
+                insert_translation(join(work.tmp_path, path),
+                    {k: translation[k] for k in translation if
+                        k.endswith('.list')})
                 work.add(join(path, '*'))  # add the new files
                 # handle vocab directory
                 path = join('vocab', lang)
-                work.rm(join(path, '*'))  # Remove all files
+                if not exists(join(work.tmp_path,path)):
+                    os.mkdir(join(work.tmp_path, path))
+                else:
+                    work.rm(join(path, '*'))  # Remove all files
                 insert_translation(join(work.tmp_path, path),
                     {k: translation[k] for k in translation if
-                        translation[k].endswith('.intent')})
-                insert_translation(work, join(work.tmp_path, path),
-                    {k: translation[k] for k in translation if
-                        translation[k].endswith('.voc')})
+                        k.endswith('.intent')})
                 insert_translation(join(work.tmp_path, path),
                     {k: translation[k] for k in translation if
-                        translation[k].endswith('.entity')})
+                        k.endswith('.voc')})
+                insert_translation(join(work.tmp_path, path),
+                    {k: translation[k] for k in translation if
+                        k.endswith('.entity')})
                 work.add(join(path, '*'))  # add the new files
                 # Handle regex dir
                 path = join('regex', lang)
-                work.rm(join(path, '*'))  # Remove all files
-                insert_translation(join(work.tmp_path, path),
-                    {k: translation[k] for k in translation if
-                        translation[k].endswith('.rx')})
+                if exists(join(work.tmp_path, 'regex')):
+                    if not exists(join(work.tmp_path,path)):
+                        os.mkdir(join(work.tmp_path, path))
+                    else:
+                        work.rm(join(path, '*'))  # Remove all files
+                    insert_translation(join(work.tmp_path, path),
+                        {k: translation[k] for k in translation if
+                            k.endswith('.rx')})
             # Commit
             work.commit('-m', 'Update translations')
             # Push branch to fork
-            work.push('work', branch)
+            work.push('-f', 'work', branch)
             # Open PR
             create_or_edit_pr(branch, upstream, lang)
