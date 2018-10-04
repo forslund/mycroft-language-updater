@@ -50,6 +50,9 @@ def create_or_edit_pr(branch, upstream, lang):
     pulls = list(upstream.get_pulls(base=base, head=head))
     title = 'Translation update for {}'.format(lang)
     body = 'Automatically generated PR from translate.mycroft.ai'
-
-    # TODO: handle previous PR's
-    return upstream.create_pull(title, body, base=base, head=head)
+    pulls = list(upstream.get_pulls(base=base, head=head))
+    if pulls:
+        pull = pulls[0]
+        pull.edit(title, body)
+    else:
+        return upstream.create_pull(title, body, base=base, head=head)
