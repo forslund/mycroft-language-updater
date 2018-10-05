@@ -187,3 +187,4 @@ def main():
             work.push('-f', 'work', branch)
             # Open PR
             create_or_edit_pr(branch, upstream, lang)
+            work.tmp_remove()
