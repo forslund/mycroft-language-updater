@@ -42,14 +42,18 @@ def create_work_dir(upstream, fork):
     return tmp_repo
 
 
-def create_or_edit_pr(branch, upstream, lang):
+def create_or_edit_pr(branch, upstream, langs=[]):
     user = g.get_user()
 
     base = upstream.default_branch
     head = '{}:{}'.format(user.login, branch)
     pulls = list(upstream.get_pulls(base=base, head=head))
-    title = 'Translation update for {}'.format(lang)
-    body = 'Automatically generated PR from translate.mycroft.ai'
+    title = 'Updated translations'.format(lang)
+    body = 'Automatically generated PR from translate.mycroft.ai\n\n'
+    body += 'The updated languages are:\n'
+    for lang in langs:
+        body += '- {}\n'.format(lang)
+
     pulls = list(upstream.get_pulls(base=base, head=head))
     if pulls:
         pull = pulls[0]

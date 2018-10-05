@@ -12,6 +12,7 @@ DEFAULT_BRANCH = '18.08'
 SKILLS_URL = ('https://raw.githubusercontent.com/MycroftAI/mycroft-skills/'
               '{}/.gitmodules')
 
+
 def get_skill_repos(branch=None):
     """ Fetches the skill list from the mycroft-skills repo and returns
         a dict mapping paths to urls
@@ -36,15 +37,6 @@ def get_skill_repos(branch=None):
         else:
             key = None
     return d
-
-
-def skill_from_po(po_file):
-    """ removes -<Lang-code>.po and returns skill name
-
-    Ex. cocktails-sv.po -> cocktails,
-        skill-alarm-de.po -> skill-alarm
-    """
-    return '-'.join(basename(po_file).split('-')[:-1])
 
 
 def download_lang(lang):
@@ -111,22 +103,32 @@ def insert_translation(path, translation):
             f.writelines([l + '\n' for l in translation[filename]])
 
 
+pootle_langs = {
+    'sv-se': 'sv',
+    'de-de': 'de'
+}
+
+
 def main():
     skill_repos = get_skill_repos()
-    for lang in languages:
-        po_dir = get_language(lang)
+    
+    for skill in skill_repos:
+        # Get repo information
+        skill_url = skill_repos[skill]
+        # Get git repo and github connections
+        fork, upstream = get_work_repos(skill_url)
+        work = create_work_dir(upstream, fork) # local clone
 
-        # for all po files
-        # use glob to get all po-files in the directory that is translated
-        for f in [po for  po in glob(join(po_dir, '*')) if is_translated(po)]:
+        for lang in pootle_langs:
+            # Build po-file path
+            f = (join(pootle_langs[lang] + '-mycroft-skills',
+                      pootle_langs[lang],
+                      'mycroft-skills',
+                      skill + '-' + pootle_langs[lang] + '.po'))
+            if not exists(f) or not is_translated(f):
+                continue
             print('Processing {}'.format(f))
-
             translation = parse_po_file(f)
-            # Get git repo and github connections
-            skill_url = skill_repos[skill_from_po(f)]
-            fork, upstream = get_work_repos(skill_url)
-            work = create_work_dir(upstream, fork)
-
             # Modify repo
             # Checkout new branch
             branch = 'translate-' + str(date.today())
@@ -181,10 +183,14 @@ def main():
                     insert_translation(join(work.tmp_path, path),
                         {k: translation[k] for k in translation if
                             k.endswith('.rx')})
-            # Commit
-            work.commit('-m', 'Update translations')
-            # Push branch to fork
-            work.push('-f', 'work', branch)
-            # Open PR
-            create_or_edit_pr(branch, upstream, lang)
-            work.tmp_remove()
+        #TODO CHECK git diff to determine if anything has changed
+        # Commit
+        work.commit('-m', 'Update translations')
+        # Push branch to fork
+        work.push('-f', 'work', branch)
+        # Open PR
+        create_or_edit_pr(branch, upstream)
+        work.tmp_remove()
+
+if __name__ == '__main__':
+    main()
