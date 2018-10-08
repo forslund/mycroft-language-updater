@@ -197,13 +197,18 @@ def main():
                     insert_translation(join(work.tmp_path, path),
                         {k: translation[k] for k in translation if
                             k.endswith('.rx')})
-        #TODO CHECK git diff to determine if anything has changed
-        # Commit
-        work.commit('-m', 'Update translations')
-        # Push branch to fork
-        work.push('-f', 'work', branch)
-        # Open PR
-        create_or_edit_pr(branch, upstream)
+                    work.add(join(path, '*'))  # add the new files
+
+        if work.diff('--cached') != '':
+            print("\tCreating PR for {}".format(skill))
+            # Commit
+            work.commit('-m', 'Update translations')
+            # Push branch to fork
+            work.push('-f', 'work', branch)
+            # Open PR
+            create_or_edit_pr(branch, upstream)
+        else:
+            print('\tNo changes for {}, skipping PR'.format(skill))
         work.tmp_remove()
 
 if __name__ == '__main__':
